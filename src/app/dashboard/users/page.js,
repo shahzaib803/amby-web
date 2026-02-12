@@ -1,0 +1,66 @@
+'use client';
+import React from 'react';
+import { 
+  Typography, 
+  Paper, 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableContainer, 
+  TableHead, 
+  TableRow,
+  Chip
+} from '@mui/material';
+import DashboardLayout from '../../../components/DashboardLayout';
+
+const rows = [
+  { id: 1, name: 'John Doe', email: 'john@example.com', status: 'Active', spent: '$120' },
+  { id: 2, name: 'Jane Smith', email: 'jane@example.com', status: 'Inactive', spent: '$0' },
+  { id: 3, name: 'Alice Johnson', email: 'alice@example.com', status: 'Active', spent: '$450' },
+  { id: 4, name: 'Bob Brown', email: 'bob@example.com', status: 'Pending', spent: '$25' },
+  { id: 5, name: 'Charlie Davis', email: 'charlie@example.com', status: 'Active', spent: '$1,200' },
+];
+
+export default function CustomersPage() {
+  return (
+    <DashboardLayout>
+      <Typography variant="h4" component="h1" gutterBottom fontWeight="bold">
+        Customers
+      </Typography>
+      
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell align="right">Total Spent</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {rows.map((row) => (
+              <TableRow
+                key={row.id}
+                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+              >
+                <TableCell component="th" scope="row">
+                  {row.name}
+                </TableCell>
+                <TableCell>{row.email}</TableCell>
+                <TableCell>
+                  <Chip 
+                    label={row.status} 
+                    color={row.status === 'Active' ? 'success' : row.status === 'Inactive' ? 'default' : 'warning'} 
+                    size="small"
+                  />
+                </TableCell>
+                <TableCell align="right">{row.spent}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </DashboardLayout>
+  );
+}
