@@ -323,7 +323,7 @@ export default function CustomersPage() {
     const matchesLocation =
       locationFilter === 'All Locations' || user.location === locationFilter;
     const matchesType =
-      typeFilter === 'All Types' || user.type === typeFilter;
+      typeFilter === 'All Types' || user?.userType === typeFilter.toLowerCase();
     return matchesSearch && matchesLocation && matchesType;
   });
 
@@ -331,16 +331,16 @@ export default function CustomersPage() {
 
   // Export CSV
   const exportCSV = () => {
-    const headers = ['Username', 'Email', 'Location', 'Status', 'Type', 'Points', 'UserID', 'User Type'];
+    const headers = ['Username', 'Email', 'Location', 'Status', 'User Type', 'Points', 'UserID', ];
     const rows = filteredUsers.map(user => [
       user.username,
       user.email,
       user.location,
       user.status || 'Active',
-      user.type,
+      user.userType,
       user.points,
       user.userId,
-      user.userType
+     
     ]);
 
     const csvContent = "data:text/csv;charset=utf-8," 
