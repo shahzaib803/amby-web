@@ -339,8 +339,7 @@ export default function CustomersPage() {
       user.status || 'Active',
       user.userType,
       user.points,
-      user.userId,
-     
+      user.id,
     ]);
 
     const csvContent = "data:text/csv;charset=utf-8," 
