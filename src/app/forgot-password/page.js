@@ -14,6 +14,7 @@ import {
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import AmbyLogo from '../../images/logo.svg';
+import { supabase } from '../../lib/supabase';
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -24,8 +25,9 @@ export default function ForgotPasswordPage() {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!email) {
       setSnackbarMessage('Please enter your email address');
       setSnackbarSeverity('error');
@@ -35,22 +37,30 @@ export default function ForgotPasswordPage() {
 
     setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
+    // ✅ Call Supabase to send reset password email
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/reset-password`
+    });
+
+    if (error) {
+      setSnackbarMessage(error.message);
+      setSnackbarSeverity('error');
+    } else {
       setSnackbarMessage('Reset link sent to your email');
       setSnackbarSeverity('success');
-      setOpenSnackbar(true);
 
+      // Optionally redirect to login after 2 seconds
       setTimeout(() => {
         router.push('/login');
       }, 2000);
-    }, 1500);
+    }
+
+    setOpenSnackbar(true);
+    setLoading(false);
   };
 
   const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
+    if (reason === 'clickaway') return;
     setOpenSnackbar(false);
   };
 
@@ -132,7 +142,7 @@ export default function ForgotPasswordPage() {
         </Box>
       </Container>
 
-      {/* Toaster / Snackbar */}
+      {/* Snackbar */}
       <Snackbar 
         open={openSnackbar} 
         autoHideDuration={6000} 

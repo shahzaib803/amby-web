@@ -1,10 +1,9 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Button, 
   Container, 
-  TextField, 
   Typography, 
   Paper, 
   Table, 
@@ -19,61 +18,82 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
+  TextField,
   Chip
 } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
-import SearchIcon from '@mui/icons-material/Search';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import DashboardLayout from '../../../components/DashboardLayout';
-
-// Dummy Data
-const initialRows = [
-  { id: 1, username: 'mike1234', email: 'mike@gmail.com', location: 'New York City', status: 'Active', type: 'Free', points: '123,456', userId: 'AW-1234' },
-  { id: 2, username: 'ray1234', email: 'ray@gmail.com', location: 'New York City', status: 'Active', type: 'Paid', points: '123,456', userId: 'AW-1234' },
-  { id: 3, username: 'jake1234', email: 'jake@gmail.com', location: 'New York City', status: 'Active', type: 'Paid', points: '123,456', userId: 'AW-1234' },
-  { id: 4, username: 'steve1234', email: 'steve@gmail.com', location: 'Hong Kong', status: 'Active', type: 'Free', points: '123,456', userId: 'AW-1234' },
-  { id: 5, username: '1234', email: 'winnie@gmail.com', location: 'New York City', status: 'Suspended', type: 'Free', points: '123,456', userId: 'AW-1234' },
-  // Add more rows to test pagination if needed
-  { id: 6, username: 'dummy1', email: 'dummy1@gmail.com', location: 'London', status: 'Active', type: 'Free', points: '123,456', userId: 'AW-1234' },
-  { id: 7, username: 'dummy2', email: 'dummy2@gmail.com', location: 'Paris', status: 'Suspended', type: 'Paid', points: '123,456', userId: 'AW-1234' },
-  { id: 8, username: 'dummy3', email: 'dummy3@gmail.com', location: 'Tokyo', status: 'Active', type: 'Free', points: '123,456', userId: 'AW-1234' },
-  { id: 9, username: 'dummy4', email: 'dummy4@gmail.com', location: 'Berlin', status: 'Active', type: 'Paid', points: '123,456', userId: 'AW-1234' },
-  { id: 10, username: 'dummy5', email: 'dummy5@gmail.com', location: 'Sydney', status: 'Active', type: 'Free', points: '123,456', userId: 'AW-1234' },
-];
+import { supabase } from '@/lib/supabase';
 
 export default function CustomersPage() {
   const router = useRouter();
+
+  const [users, setUsers] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [search, setSearch] = useState('');
   const [locationFilter, setLocationFilter] = useState('All Locations');
   const [typeFilter, setTypeFilter] = useState('All Types');
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
+  // Fetch users from Supabase
+  const fetchUsers = async () => {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*');
+    if (error) {
+      console.error(error);
+    } else {
+      setUsers(data);
+    }
   };
 
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
-  // Filter Logic
-  const filteredRows = initialRows.filter((row) => {
-    const matchesSearch = row.username.toLowerCase().includes(search.toLowerCase()) || 
-                          row.email.toLowerCase().includes(search.toLowerCase());
-    const matchesLocation = locationFilter === 'All Locations' || row.location === locationFilter;
-    const matchesType = typeFilter === 'All Types' || row.type === typeFilter;
+  // Filter users
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      user.username?.toLowerCase().includes(search.toLowerCase()) ||
+      user.email?.toLowerCase().includes(search.toLowerCase());
+    const matchesLocation =
+      locationFilter === 'All Locations' || user.location === locationFilter;
+    const matchesType =
+      typeFilter === 'All Types' || user.type === typeFilter;
     return matchesSearch && matchesLocation && matchesType;
   });
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - filteredRows.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - filteredUsers.length) : 0;
+
+  // Export CSV
+  const exportCSV = () => {
+    const headers = ['Username', 'Email', 'Location', 'Status', 'Type', 'Points', 'UserID'];
+    const rows = filteredUsers.map(user => [
+      user.username,
+      user.email,
+      user.location,
+      user.status,
+      user.type,
+      user.points,
+      user.userId
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + headers.join(",") + "\n" 
+      + rows.map(e => e.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "users.csv");
+    document.body.appendChild(link);
+    link.click();
+  };
 
   return (
     <DashboardLayout>
       <Box sx={{ p: 2 }}>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4, fontWeight: 'bold' }}>
+        <Typography variant="h4" gutterBottom sx={{ mb: 4, fontWeight: 'bold' }}>
           User management
         </Typography>
 
@@ -82,9 +102,8 @@ export default function CustomersPage() {
           <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'center' }}>
             {/* Search */}
             <TextField 
-              // Increased height by removing size="small" 
               placeholder="Name, email, etc..." 
-              label="Search" // Added label to match standard MUI better or keep simple
+              label="Search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               sx={{ flexGrow: 1 }}
@@ -155,8 +174,8 @@ export default function CustomersPage() {
             </TableHead>
             <TableBody>
               {(rowsPerPage > 0
-                ? filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                : filteredRows
+                ? filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                : filteredUsers
               ).map((row) => (
                 <TableRow 
                   key={row.id} 
@@ -167,9 +186,7 @@ export default function CustomersPage() {
                     cursor: 'pointer' 
                   }}
                 >
-                  <TableCell component="th" scope="row">
-                    {row.username}
-                  </TableCell>
+                  <TableCell component="th" scope="row">{row.username}</TableCell>
                   <TableCell>{row.email}</TableCell>
                   <TableCell>{row.location}</TableCell>
                   <TableCell>
@@ -196,21 +213,25 @@ export default function CustomersPage() {
               )}
             </TableBody>
           </Table>
-          
+
           {/* Pagination & Export */}
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', p: 2 }}>
              <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
-              count={filteredRows.length}
+              count={filteredUsers.length}
               rowsPerPage={rowsPerPage}
               page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
+              onPageChange={(e, newPage) => setPage(newPage)}
+              onRowsPerPageChange={(e) => {
+                setRowsPerPage(parseInt(e.target.value, 10));
+                setPage(0);
+              }}
             />
             <Button 
                variant="contained" 
                sx={{ ml: 2, bgcolor: '#FF6D00', color: 'white', fontWeight: 'bold' }}
+               onClick={exportCSV}
             >
                EXPORT CSV
             </Button>

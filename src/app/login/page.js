@@ -13,39 +13,74 @@ import {
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import AmbyLogo from '../../images/logo.svg';
+import { supabase } from '../../lib/supabase';
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  
+  const [loading, setLoading] = useState(false);
+
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (email === 'test@gmail.com' && password === 'Password@1') {
-      setSnackbarMessage('Log in successful');
-      setSnackbarSeverity('success');
-      setOpenSnackbar(true);
-      
-      localStorage.setItem('isAuthenticated', 'true');
-      
-      setTimeout(() => {
-        router.push('/dashboard/users');
-      }, 1000);
-    } else {
-      setSnackbarMessage('Incorrect password or email. Try again');
+    setLoading(true);
+
+    // 1️⃣ Sign in with Supabase
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      setSnackbarMessage(error.message);
       setSnackbarSeverity('error');
       setOpenSnackbar(true);
+      setLoading(false);
+      return;
     }
+
+    // 2️⃣ Check if user is admin
+    const { data: profile, error: profileError } = await supabase
+      .from('users')
+      .select('role')
+      .eq('email', data?.user?.email)
+      .single();
+
+    if (profileError || !profile) {
+      setSnackbarMessage('Unable to verify user role');
+      setSnackbarSeverity('error');
+      setOpenSnackbar(true);
+      setLoading(false);
+      return;
+    }
+
+    if (profile.role !== 'admin') {
+      await supabase.auth.signOut();
+      setSnackbarMessage('You are not authorized as admin');
+      setSnackbarSeverity('error');
+      setOpenSnackbar(true);
+      setLoading(false);
+      return;
+    }
+
+    // ✅ Admin login success
+    setSnackbarMessage('Admin login successful');
+    setSnackbarSeverity('success');
+    setOpenSnackbar(true);
+
+    setTimeout(() => {
+      router.push('/dashboard/users');
+    }, 1000);
+
+    setLoading(false);
   };
 
   const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
+    if (reason === 'clickaway') return;
     setOpenSnackbar(false);
   };
 
@@ -86,22 +121,20 @@ export default function LoginPage() {
               margin="normal"
               required
               fullWidth
-              id="email"
               label="Email Address"
-              name="email"
+              type="email"
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               sx={{ mb: 2 }}
             />
+
             <TextField
               margin="normal"
               required
               fullWidth
-              name="password"
               label="Password"
               type="password"
-              id="password"
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -112,6 +145,7 @@ export default function LoginPage() {
               type="submit"
               fullWidth
               variant="contained"
+              disabled={loading}
               sx={{ 
                 mt: 1, 
                 mb: 2, 
@@ -123,7 +157,7 @@ export default function LoginPage() {
                 }
               }}
             >
-              LOGIN
+              {loading ? 'Logging in...' : 'LOGIN'}
             </Button>
 
             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -135,7 +169,6 @@ export default function LoginPage() {
         </Box>
       </Container>
 
-
       <Snackbar 
         open={openSnackbar}
         autoHideDuration={6000} 
@@ -146,14 +179,6 @@ export default function LoginPage() {
           onClose={handleCloseSnackbar} 
           severity={snackbarSeverity} 
           variant="filled"
-          sx={{ 
-            width: '100%',
-            bgcolor: snackbarSeverity === 'success' ? '#E8F5E9' : '#FFEBEE', 
-            color: snackbarSeverity === 'success' ? '#2E7D32' : '#C62828',
-            '& .MuiAlert-icon': {
-               color: snackbarSeverity === 'success' ? '#2E7D32' : '#C62828'
-            }
-          }}
         >
           {snackbarMessage}
         </Alert>
