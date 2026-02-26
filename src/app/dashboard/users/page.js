@@ -438,12 +438,13 @@ export default function CustomersPage() {
                 <TableRow 
                   key={row.userId} 
                   hover
-                  onClick={() => router.push(`/dashboard/users/${row?.userId}`)}
+                  onClick={() => router.push(`/dashboard/users/${row?.id}`)}
                   sx={{ 
                     '&:last-child td, &:last-child th': { border: 0 },
                     cursor: 'pointer' 
                   }}
                 >
+         
                   <TableCell>{row?.username}</TableCell>
                   <TableCell>{row?.email}</TableCell>
                   <TableCell>{row?.location}</TableCell>
@@ -452,8 +453,8 @@ export default function CustomersPage() {
                       label={row?.status || 'Active'} 
                       size="small" 
                       sx={{ 
-                        bgcolor: row?.status === 'Active' ? '#E0E0E0' : '#FF6D00', 
-                        color: row?.status === 'Active' ? 'text.primary' : 'white',
+                        bgcolor: row?.status === 'Active' ? '#FF6D00' : '#E0E0E0', 
+                        color: row?.status === 'Active' ? 'white' : 'text.primary',
                         minWidth: 80,
                         height: '30px'
                       }} 

@@ -425,9 +425,9 @@ export default function AddUserPage() {
                     onBlur={formik.handleBlur}
                   >
                     <MenuItem value=""><em>Select Location</em></MenuItem>
-                    <MenuItem value="New York City">New York City</MenuItem>
+                    <MenuItem value="New York">New York City</MenuItem>
                     <MenuItem value="Hong Kong">Hong Kong</MenuItem>
-                    <MenuItem value="London">London</MenuItem>
+                    {/* <MenuItem value="London">London</MenuItem> */}
                   </Select>
                   {formik.touched.location && formik.errors.location && (
                     <FormHelperText>{formik.errors.location}</FormHelperText>
@@ -445,8 +445,8 @@ export default function AddUserPage() {
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                   >
-                    <MenuItem value="Free">Free</MenuItem>
-                    <MenuItem value="Paid">Paid</MenuItem>
+                    <MenuItem value="free">Free</MenuItem>
+                    <MenuItem value="paid">Paid</MenuItem>
                   </Select>
                   {formik.touched.subscription_tier && formik.errors.subscription_tier && (
                     <FormHelperText>{formik.errors.subscription_tier}</FormHelperText>
