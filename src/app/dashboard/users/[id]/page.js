@@ -204,7 +204,7 @@ export default function EditUserPage({ params }) {
 
   const handleConfirmDelete = async () => {
     setOpenDelete(false);
-    deleteUser(userId);
+    deleteUser(accountFormik.values.email);
     await supabase.from('profiles').delete().eq('id', userId);
     await supabase.from('users').delete().eq('id', userId);
 
