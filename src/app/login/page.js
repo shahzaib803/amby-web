@@ -50,6 +50,7 @@ export default function LoginPage() {
       .eq('email', data?.user?.email)
       .single();
 
+      console.log('User profile:', profile, 'Error:', profileError);
     if (profileError || !profile) {
       setSnackbarMessage('Unable to verify user role');
       setSnackbarSeverity('error');

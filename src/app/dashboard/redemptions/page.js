@@ -195,6 +195,7 @@ import {
 import SettingsIcon from '@mui/icons-material/Settings';
 import DashboardLayout from '../../../components/DashboardLayout';
 import { supabase } from '../../../lib/supabase';
+import { dynamicWeirdFormat } from '../../../utils/Format';
 
 export default function RedemptionsPage() {
   const [rows, setRows] = useState([]);
@@ -413,9 +414,9 @@ export default function RedemptionsPage() {
                       </TableCell>
                       {/* <TableCell>{row.last_reward}</TableCell>
                       <TableCell>{row.last_dollar}</TableCell> */}
-                      <TableCell>{row.points_deducted}</TableCell>
-                      <TableCell>{row.denomination}$</TableCell>
-                      <TableCell>{row.points_deducted}</TableCell>
+                      <TableCell>{dynamicWeirdFormat(row.points_deducted)}</TableCell>
+                      <TableCell>${row.denomination}</TableCell>
+                      <TableCell>{dynamicWeirdFormat(row.points_deducted)}</TableCell>
                     </TableRow>
                   ))}
 
