@@ -32,7 +32,7 @@ export default function CustomersPage() {
 
   const [users, setUsers] = useState([]);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(100);
   const [search, setSearch] = useState('');
   const [locationFilter, setLocationFilter] = useState('All Locations');
   const [typeFilter, setTypeFilter] = useState('All Types');
@@ -229,7 +229,7 @@ export default function CustomersPage() {
           {/* Pagination & Export */}
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', p: 2 }}>
             <TablePagination
-              rowsPerPageOptions={[5, 10, 25]}
+              rowsPerPageOptions={[100, 150, 200]}
               component="div"
               count={filteredUsers.length}
               rowsPerPage={rowsPerPage}
