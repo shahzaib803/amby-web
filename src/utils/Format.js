@@ -1,24 +1,15 @@
-function dynamicWeirdFormat(num) {
-    const numStr = num.toString();
+function dynamicWeirdFormat(value) {
+    if (value === undefined || value === null) return "0";
 
-    if (numStr.length <= 3) return numStr;  // small numbers, no commas
+    // Convert to string and remove existing commas to ensure clean parsing
+    const stringValue = value.toString().replace(/,/g, "");
 
-    let firstPart = numStr.slice(0, 1);    // first digit
-    let secondPart = numStr.slice(1, 5);   // next four digits
-    let remaining = numStr.slice(5);       // rest of digits
+    // Parse as float to handle potential decimals, though standard rank is int
+    const numberValue = parseFloat(stringValue);
 
-    // Insert commas for remaining digits in groups of 3
-    let remainingFormatted = '';
-    while (remaining.length > 3) {
-        remainingFormatted += remaining.slice(0, 3) + ',';
-        remaining = remaining.slice(3);
-    }
-    remainingFormatted += remaining; // add last part
+    if (isNaN(numberValue)) return "0";
 
-    let result = firstPart + ',' + secondPart;
-    if (remainingFormatted) result += ',' + remainingFormatted;
-
-    return result;
+    return numberValue.toLocaleString();
 }
 
 export { dynamicWeirdFormat };
